@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evaluación de Proyectos — IME1010 | Semana en Movimiento 2026</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --navy:#21295C;--deep:#065A82;--teal:#1C7293;--teal2:#28B5D0;
+  --gold:#F5A623;--white:#fff;--bg:#F4F8FB;
+  --gray:#64748B;--border:#E2E8F0;
+  --ok:#27AE60;--err:#E74C3C;--warn:#F59E0B;--purple:#6D28D9;
+  --shadow:0 2px 14px rgba(33,41,92,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:#1E293B;min-height:100vh}
+/* HEADER */
+.hdr{background:linear-gradient(135deg,var(--navy),var(--deep) 55%,var(--teal));color:#fff;
+  position:sticky;top:0;z-index:1000;box-shadow:0 2px 20px rgba(6,90,130,.35)}
+.hdr-in{display:flex;align-items:center;justify-content:space-between;
+  padding:.68rem 1.35rem;max-width:1440px;margin:0 auto;gap:.7rem;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:.65rem}
+.brand-ico{width:40px;height:40px;background:rgba(255,255,255,.15);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:1.35rem}
+.brand-txt h1{font-size:.95rem;font-weight:800}
+.brand-txt p{font-size:.66rem;opacity:.72;margin-top:1px}
+nav{display:flex;gap:.32rem;flex-wrap:wrap}
+.nbtn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
+  color:#fff;padding:.4rem .78rem;border-radius:8px;font-size:.74rem;
+  cursor:pointer;font-weight:600;transition:all .2s;white-space:nowrap}
+.nbtn:hover{background:rgba(255,255,255,.24)}
+.nbtn.on{background:var(--gold);border-color:var(--gold);color:var(--navy)}
+/* PAGES */
+.pg{display:none}.pg.on{display:block}
+.wrap{max-width:1440px;margin:0 auto;padding:1.35rem}
+/* CARD */
+.card{background:#fff;border-radius:14px;box-shadow:var(--shadow);padding:1.35rem;margin-bottom:1.15rem}
+.ctit{font-size:.95rem;font-weight:800;color:var(--navy);margin-bottom:.95rem;
+  display:flex;align-items:center;gap:.42rem}
+/* HERO */
+.hero{background:linear-gradient(135deg,var(--navy),var(--deep) 60%,var(--teal));
+  color:#fff;border-radius:18px;padding:2rem;margin-bottom:1.35rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;right:-50px;top:-50px;width:240px;height:240px;
+  border-radius:50%;background:rgba(255,255,255,.05)}
+.hero-ey{font-size:.68rem;text-transform:uppercase;letter-spacing:2.5px;opacity:.7;margin-bottom:.45rem}
+.hero h2{font-size:1.85rem;font-weight:900;line-height:1.1;margin-bottom:.3rem}
+.hero-s{font-size:.88rem;opacity:.82;margin-bottom:1.1rem}
+.hero-tags{display:flex;flex-wrap:wrap;gap:.45rem}
+.htag{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.2);
+  border-radius:8px;padding:.32rem .78rem;font-size:.74rem;font-weight:600}
+.htag.gold{background:var(--gold);border-color:var(--gold);color:var(--navy)}
+/* KPI */
+.kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:.95rem;margin-bottom:1.25rem}
+.kpi{background:#fff;border-radius:12px;padding:1.1rem;text-align:center;
+  box-shadow:var(--shadow);border-top:3px solid var(--teal)}
+.kn{font-size:2.1rem;font-weight:900;color:var(--navy);line-height:1}
+.kl{font-size:.66rem;color:var(--gray);margin-top:.28rem;text-transform:uppercase;letter-spacing:.5px}
+/* PROGRESS */
+.pb{background:var(--border);border-radius:999px;height:9px;overflow:hidden;margin-top:.48rem}
+.pbi{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--teal),var(--deep));transition:width .5s}
+/* EVALUATOR SELECT */
+.evgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:.85rem}
+.evcard{border:2px solid var(--border);border-radius:12px;padding:1.05rem;
+  text-align:center;cursor:pointer;transition:all .2s;background:#fff}
+.evcard:hover{border-color:var(--teal);box-shadow:0 0 0 3px rgba(28,114,147,.1)}
+.evcard.sel{border-color:var(--deep);background:#EFF8FF}
+.evav{width:50px;height:50px;border-radius:50%;margin:0 auto .6rem;
+  display:flex;align-items:center;justify-content:center;font-size:1.45rem}
+.evnm{font-weight:700;font-size:.83rem;color:var(--navy)}
+.evrl{font-size:.68rem;color:var(--gray);margin-top:.12rem}
+.badge{display:inline-block;padding:.17rem .52rem;border-radius:99px;
+  font-size:.6rem;font-weight:700;margin-top:.38rem;text-transform:uppercase;letter-spacing:.4px}
+.bp{background:#DBEAFE;color:#1E40AF}
+.be{background:#D1FAE5;color:#065F46}
+/* GROUPS */
+.ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(265px,1fr));gap:.85rem}
+.gc{border:2px solid var(--border);border-radius:12px;padding:.95rem;
+  background:#fff;cursor:pointer;transition:all .2s;position:relative}
+.gc:hover{border-color:var(--teal);transform:translateY(-1px);box-shadow:var(--shadow)}
+.gc.done{border-color:var(--ok);background:#F0FDF4}
+.gh{display:flex;align-items:center;justify-content:space-between;margin-bottom:.52rem}
+.gnum{width:32px;height:32px;background:var(--deep);color:#fff;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.92rem}
+.sbadge{font-size:.63rem;font-weight:700;padding:.18rem .52rem;border-radius:99px}
+.s01{background:#DBEAFE;color:#1E40AF}.s02{background:#EDE9FE;color:#5B21B6}
+.gproj{font-weight:700;font-size:.81rem;color:var(--navy);margin-bottom:.32rem;line-height:1.35}
+.gmem{font-size:.68rem;color:var(--gray);line-height:1.5}
+.gst{position:absolute;top:.7rem;right:.7rem;width:9px;height:9px;border-radius:50%}
+.stok{background:var(--ok)}.stpd{background:var(--warn)}.stnone{background:var(--border)}
+/* FORM */
+.eform{max-width:810px;margin:0 auto}
+.qb{background:#fff;border-radius:14px;padding:1.35rem;margin-bottom:1.05rem;
+  box-shadow:var(--shadow);border-left:4px solid var(--teal)}
+.qlbl{font-size:.66rem;text-transform:uppercase;letter-spacing:1px;color:var(--teal);font-weight:700;margin-bottom:.32rem}
+.qtxt{font-size:.88rem;color:var(--navy);font-weight:600;line-height:1.5;margin-bottom:.95rem}
+.nrow{display:flex;flex-wrap:wrap;gap:.26rem;margin-bottom:.65rem}
+.nb{padding:.26rem .48rem;border-radius:6px;border:1.5px solid var(--border);
+  background:#fff;font-size:.71rem;cursor:pointer;font-weight:700;min-width:36px;text-align:center;transition:all .15s}
+.nb:hover{border-color:var(--teal);color:var(--teal)}
+.nb.S{background:var(--deep);border-color:var(--deep);color:#fff}
+.nb.S.bajo{background:var(--err);border-color:var(--err)}
+.nb.S.med{background:var(--warn);border-color:var(--warn);color:#fff}
+.nb.S.alto{background:var(--ok);border-color:var(--ok)}
+.nb.bajo{border-color:#FCA5A5}.nb.med{border-color:#FCD34D}.nb.alto{border-color:#6EE7B7}
+.nlive{font-size:2.2rem;font-weight:900;color:var(--deep);display:inline-block;min-width:48px}
+.q4inp{width:100%;padding:.65rem .85rem;border:1.5px solid var(--border);border-radius:8px;
+  font-size:.83rem;font-family:inherit;background:var(--bg);color:var(--navy);
+  margin-bottom:.65rem;transition:border-color .2s}
+.q4inp:focus{outline:none;border-color:var(--teal)}
+.cmt{width:100%;padding:.62rem .82rem;border:1.5px solid var(--border);border-radius:8px;
+  font-size:.8rem;font-family:inherit;resize:vertical;min-height:58px;
+  color:var(--navy);transition:border-color .2s}
+.cmt:focus{outline:none;border-color:var(--teal)}
+/* NOTA RESUMEN */
+.nres{background:linear-gradient(135deg,var(--navy),var(--deep));
+  border-radius:14px;padding:1.35rem;color:#fff;margin-bottom:1.15rem}
+.nr-row{display:flex;justify-content:space-between;align-items:center;
+  padding:.42rem 0;border-bottom:1px solid rgba(255,255,255,.12)}
+.nr-row:last-child{border:none}
+.nr-lbl{font-size:.8rem;opacity:.85}
+.nr-val{font-size:1.25rem;font-weight:800}
+.nfbig{font-size:2.9rem;font-weight:900;color:var(--gold);text-align:center;padding:.85rem 0 .38rem}
+.nflbl{text-align:center;font-size:.68rem;opacity:.65;letter-spacing:1px;text-transform:uppercase}
+/* TABLA */
+.tbl{width:100%;border-collapse:collapse;font-size:.79rem}
+.tbl th{background:var(--navy);color:#fff;padding:.52rem .82rem;text-align:left;
+  font-size:.7rem;text-transform:uppercase;letter-spacing:.4px}
+.tbl td{padding:.58rem .82rem;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:hover td{background:#F8FAFC}
+.tbl tr:nth-child(even) td{background:#FAFBFC}
+/* BOTONES */
+.btn{padding:.6rem 1.2rem;border-radius:8px;border:none;cursor:pointer;
+  font-size:.81rem;font-weight:700;transition:all .2s;
+  display:inline-flex;align-items:center;gap:.38rem}
+.bp2{background:var(--deep);color:#fff}.bp2:hover{background:var(--navy)}
+.bok{background:var(--ok);color:#fff}.bok:hover{filter:brightness(.9)}
+.bgold{background:var(--gold);color:var(--navy)}.bgold:hover{filter:brightness(.95)}
+.bout{background:transparent;border:2px solid var(--deep);color:var(--deep)}
+.bout:hover{background:var(--deep);color:#fff}
+.bsm{padding:.36rem .72rem;font-size:.71rem}
+.brow{display:flex;gap:.65rem;flex-wrap:wrap;margin-top:.85rem}
+/* ALERT */
+.al{padding:.82rem .95rem;border-radius:10px;font-size:.81rem;margin-bottom:.95rem}
+.ali{background:#EFF8FF;border-left:4px solid var(--teal);color:var(--deep)}
+.alw{background:#FFFBEB;border-left:4px solid var(--warn);color:#92400E}
+.alo{background:#F0FDF4;border-left:4px solid var(--ok);color:#166534}
+/* FILTER */
+.fbar{display:flex;gap:.68rem;flex-wrap:wrap;margin-bottom:1.05rem;align-items:center}
+.fsel,.finp{padding:.45rem .82rem;border-radius:8px;border:1.5px solid var(--border);
+  font-size:.78rem;background:#fff;color:var(--navy);font-weight:600}
+.finp{min-width:195px}
+/* MODAL */
+.mbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);
+  z-index:9000;align-items:center;justify-content:center;padding:1rem}
+.mbg.on{display:flex}
+.mbox{background:#fff;border-radius:18px;max-width:580px;width:100%;
+  max-height:90vh;overflow-y:auto;padding:1.9rem;position:relative}
+.mclose{position:absolute;top:.85rem;right:.85rem;background:var(--border);border:none;
+  width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:.88rem;
+  display:flex;align-items:center;justify-content:center}
+.mtit{font-size:1rem;font-weight:800;color:var(--navy);margin-bottom:.85rem}
+/* QR — eliminado */
+/* LOGIN SCREEN */
+.login-bg{
+  position:fixed;inset:0;z-index:9999;
+  background:linear-gradient(135deg,var(--navy) 0%,var(--deep) 55%,var(--teal) 100%);
+  display:flex;align-items:center;justify-content:center;padding:1rem;
+}
+.login-box{
+  background:#fff;border-radius:20px;padding:2.4rem 2rem;
+  max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.35);
+}
+.login-logo{text-align:center;margin-bottom:1.2rem}
+.login-logo .ico{font-size:2.8rem;display:block;margin-bottom:.4rem}
+.login-logo h2{font-size:1.2rem;font-weight:900;color:var(--navy)}
+.login-logo p{font-size:.72rem;color:var(--gray);margin-top:.2rem}
+.login-field{margin-bottom:1rem}
+.login-field label{display:block;font-size:.76rem;font-weight:700;color:var(--navy);margin-bottom:.38rem}
+.login-field input{
+  width:100%;padding:.65rem .9rem;
+  border:1.5px solid var(--border);border-radius:9px;
+  font-size:.88rem;font-family:inherit;transition:border-color .2s;
+  background:#fff;
+}
+.login-field input:focus{outline:none;border-color:var(--teal)}
+.login-field input.err{border-color:var(--err)}
+.login-err{background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;
+  padding:.65rem .85rem;font-size:.8rem;color:#991B1B;margin-bottom:.9rem;display:none}
+.login-btn{
+  width:100%;padding:.75rem;border:none;border-radius:9px;
+  background:var(--deep);color:#fff;font-size:.92rem;font-weight:700;
+  cursor:pointer;transition:all .2s;margin-top:.5rem;
+}
+.login-btn:hover{background:var(--navy)}
+.login-divider{text-align:center;margin:1rem 0;font-size:.72rem;color:var(--gray)}
+.login-hint{font-size:.7rem;color:var(--gray);text-align:center;margin-top:.85rem;line-height:1.6}
+/* USER CHIP EN HEADER */
+.user-chip{
+  background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);
+  border-radius:99px;padding:.32rem .8rem;
+  font-size:.73rem;font-weight:600;color:#fff;
+  display:flex;align-items:center;gap:.4rem;cursor:default;
+}
+.user-chip .logout{
+  background:rgba(255,255,255,.2);border:none;color:#fff;
+  border-radius:99px;padding:.12rem .45rem;font-size:.65rem;
+  cursor:pointer;margin-left:.2rem;transition:all .2s;
+}
+.user-chip .logout:hover{background:rgba(255,255,255,.4)}
+/* CHARTS */
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:1.05rem}
+.cw{position:relative;height:235px}
+/* PILL */
+.pill{padding:.2rem .58rem;border-radius:99px;font-size:.66rem;font-weight:700;white-space:nowrap}
+.ppf{background:#DBEAFE;color:#1E40AF}
+.ppe{background:#D1FAE5;color:#065F46}
+.pps{background:#FEF3C7;color:#92400E}
+/* MISC */
+.sep{border:none;border-top:1px solid var(--border);margin:.85rem 0}
+.tm{color:var(--gray);font-size:.76rem}
+.fr{display:flex;align-items:center;gap:.68rem;flex-wrap:wrap}
+@media(max-width:700px){.cgrid{grid-template-columns:1fr}}
+@media(max-width:640px){
+  .hdr-in{flex-direction:column}
+  .kgrid{grid-template-columns:repeat(2,1fr)}
+  .evgrid{grid-template-columns:1fr 1fr}
+  .ggrid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══ -->
+<div id="login-screen" class="login-bg">
+  <div class="login-box">
+    <div class="login-logo">
+      <span class="ico">⚙️</span>
+      <h2>Semana en Movimiento 2026</h2>
+      <p>Evaluación de Proyectos · ICM1010 · PUCV</p>
+    </div>
+    <div class="login-err" id="login-err"></div>
+    <div class="login-field">
+      <label for="l-email">Correo institucional PUCV</label>
+      <input id="l-email" type="email"
+        placeholder="nombre.apellido@mail.pucv.cl"
+        autocomplete="email"
+        onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Ingresar →</button>
+    <div class="login-hint">
+      Ingresa tu correo institucional PUCV para identificarte.<br><br>
+      <strong>Profesores:</strong> @pucv.cl &nbsp;·&nbsp; <strong>Estudiantes:</strong> @mail.pucv.cl<br><br>
+      Solo pueden ingresar personas registradas en ICM1010.
+    </div>
+  </div>
+</div>
+
+<header class="hdr">
+  <div class="hdr-in">
+    <div class="brand">
+      <div class="brand-ico">⚙️</div>
+      <div class="brand-txt">
+        <h1>Evaluación de Proyectos · IME1010</h1>
+        <p>Semana en Movimiento 2026 · PUCV — Escuela de Ingeniería Mecánica</p>
+      </div>
+    </div>
+    <nav>
+      <button class="nbtn on" onclick="go('inicio')">🏠 Inicio</button>
+      <button class="nbtn" id="nav-asign" onclick="go('asignacion')" style="display:none">🎲 Asignaciones</button>
+      <button class="nbtn" onclick="go('evaluar')">📝 Evaluar</button>
+      <button class="nbtn" onclick="go('dashboard')">📊 Dashboard</button>
+    </nav>
+    <div id="user-chip-wrap"></div>
+  </div>
+</header>
+
+<!-- ═══ INICIO ═══ -->
+<div id="pg-inicio" class="pg on">
+<div class="wrap">
+  <div class="hero">
+    <div class="hero-ey">Pontificia Universidad Católica de Valparaíso</div>
+    <h2>Semana en Movimiento 2026</h2>
+    <div class="hero-s">Evaluación de Proyectos — Introducción a Ingeniería Mecánica</div>
+    <div class="hero-tags">
+      <span class="htag gold">⚙️ ICM1010</span>
+      <span class="htag">👩‍🏫 ICM1010-01 · Prof. M. Elizabeth Berrio</span>
+      <span class="htag">👨‍🏫 ICM1010-02 · Prof. Gustavo Morales</span>
+      <span class="htag">📅 22–26 Junio 2026</span>
+    </div>
+  </div>
+  <div class="kgrid">
+    <div class="kpi"><div class="kn" id="k0">19</div><div class="kl">Grupos totales</div></div>
+    <div class="kpi" style="border-top-color:var(--gold)"><div class="kn" id="k1" style="color:var(--gold)">0</div><div class="kl">Evaluaciones completas</div></div>
+    <div class="kpi" style="border-top-color:var(--ok)"><div class="kn" id="k2" style="color:var(--ok)">0%</div><div class="kl">Avance global</div></div>
+    <div class="kpi" style="border-top-color:var(--purple)"><div class="kn" id="k3" style="color:var(--purple)">—</div><div class="kl">Promedio general</div></div>
+  </div>
+  <div class="card">
+    <div class="ctit">📈 Progreso global</div>
+    <div id="prog"></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.15rem">
+    <div class="card">
+      <div class="ctit">🔵 ICM1010-01 <span class="badge bp" style="margin-left:.3rem">Elizabeth Berrio · 10 grupos</span></div>
+      <div id="res01"></div>
+    </div>
+    <div class="card">
+      <div class="ctit">🟣 ICM1010-02 <span class="badge bp" style="margin-left:.3rem">Gustavo Morales · 9 grupos</span></div>
+      <div id="res02"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ ASIGNACIONES ═══ -->
+<div id="pg-asignacion" class="pg">
+<div class="wrap">
+  <div class="card">
+    <div class="ctit">🎲 Control de asignaciones</div>
+    <div class="brow">
+      <button class="btn bp2" onclick="genAsign()">🎲 Generar nuevas asignaciones aleatorias</button>
+      <button class="btn bgold bsm" onclick="expAsignXL()">📥 Exportar Excel</button>
+    </div>
+  </div>
+  <div id="assign-out"><div class="al alw">Genera asignaciones con el botón de arriba.</div></div>
+</div>
+</div>
+
+<!-- ═══ EVALUAR ═══ -->
+<div id="pg-evaluar" class="pg">
+<div class="wrap">
+  <div id="s1">
+    <div class="card">
+      <div class="ctit">👤 Paso 1 — ¿Quién eres?</div>
+      <div class="evgrid" id="ev-grid"></div>
+    </div>
+  </div>
+  <div id="s2" style="display:none">
+    <div class="card">
+      <div class="fr" style="margin-bottom:.85rem">
+        <button class="btn bout bsm" onclick="back1()">← Volver</button>
+        <div class="ctit" style="margin:0">📋 Paso 2 — Selecciona el grupo a evaluar</div>
+      </div>
+      <div class="al ali" id="ev-info"></div>
+      <div class="fbar">
+        <select class="fsel" id="fsec" onchange="renderGrupos()">
+          <option value="">Todas las secciones</option>
+          <option value="ICM1010-01">ICM1010-01</option>
+          <option value="ICM1010-02">ICM1010-02</option>
+        </select>
+        <input class="finp" id="fq" placeholder="🔍 Buscar grupo o proyecto…" oninput="renderGrupos()">
+      </div>
+      <div class="ggrid" id="grupos-grid"></div>
+    </div>
+  </div>
+  <div id="s3" style="display:none">
+    <div class="eform">
+      <div class="card">
+        <div class="fr" style="margin-bottom:.85rem">
+          <button class="btn bout bsm" onclick="back2()">← Volver</button>
+          <div>
+            <div class="ctit" style="margin:0" id="ftit"></div>
+            <div class="tm" id="fsub"></div>
+          </div>
+        </div>
+      </div>
+      <div id="form-qs"></div>
+      <div class="nres" id="nresumen">
+        <div style="font-size:.68rem;opacity:.6;text-transform:uppercase;letter-spacing:1px;margin-bottom:.85rem">Vista previa — Nota del evaluador</div>
+        <div class="nfbig" id="live-n">—</div>
+        <div class="nflbl">Promedio de las 4 preguntas</div>
+      </div>
+      <div class="brow" style="justify-content:center">
+        <button class="btn bok" style="padding:.82rem 1.9rem;font-size:.98rem" onclick="saveEval()">
+          ✅ Guardar evaluación
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ DASHBOARD ═══ -->
+<div id="pg-dashboard" class="pg">
+<div class="wrap">
+  <div class="card">
+    <div class="ctit">📊 Dashboard — Resultados en tiempo real</div>
+    <div class="brow">
+      <button class="btn bgold" onclick="expDashXL()">📥 Exportar Excel completo</button>
+      <button class="btn bout bsm" onclick="renderDash()">🔄 Actualizar</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ctit">🏆 Ranking — Nota Final Consolidada</div>
+    <div class="fbar">
+      <select class="fsel" id="dflt" onchange="renderRank()">
+        <option value="">Todas las secciones</option>
+        <option value="ICM1010-01">ICM1010-01</option>
+        <option value="ICM1010-02">ICM1010-02</option>
+      </select>
+    </div>
+    <div style="overflow-x:auto" id="rank-out"></div>
+  </div>
+  <div class="cgrid">
+    <div class="card"><div class="ctit">📊 Distribución de notas</div><div class="cw"><canvas id="ch-hist"></canvas></div></div>
+    <div class="card"><div class="ctit">🎯 Promedio por sección</div><div class="cw"><canvas id="ch-sec"></canvas></div></div>
+  </div>
+  <div class="card">
+    <div class="ctit">⏳ Estado por evaluador</div>
+    <div id="ev-estado"></div>
+  </div>
+</div>
+</div>
+
+<!-- MODAL OK -->
+<div class="mbg" id="mok">
+  <div class="mbox">
+    <button class="mclose" onclick="cModal('mok')">✕</button>
+    <div style="text-align:center;padding:.9rem 0">
+      <div style="font-size:2.8rem;margin-bottom:.45rem">✅</div>
+      <div class="mtit" style="text-align:center">¡Evaluación guardada!</div>
+      <div id="mok-body" style="font-size:.86rem;color:var(--gray);line-height:1.75;margin-bottom:1.3rem"></div>
+      <div class="brow" style="justify-content:center">
+        <button class="btn bp2" onclick="evalOtro()">📝 Evaluar otro grupo</button>
+        <button class="btn bout" onclick="cModal('mok');go('dashboard')">📊 Ver dashboard</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// DATOS REALES (de grupos.json, evaluadores.json, preguntas.json)
+// ══════════════════════════════════════════════════════════════
+const GD = {
+  "ICM1010-01":{
+    profesor:"M. Elizabeth Berrio",
+    grupos:[
+      {num:1,  proyecto:"Toldo Mecánico",
+       estudiantes:["Benjamin Cesped Aguilera","Fabian Lazcano Herrera","Jose Raurich Vargas","Harald Thomas Schevik Embry"]},
+      {num:2,  proyecto:"Sistema de Riego Automático con Sensor de Humedad y Bluetooth",
+       estudiantes:["Renato Alexander Hanglin Hernández","Diego Iturrieta Candia","Nicolas Rubino Bolados"]},
+      {num:3,  proyecto:"Banca-Mesa",
+       estudiantes:["Dario Novoa","Channel Barnier Ramirez","Alvaro Caipillan Cartajena","Agustín Ignacio Chávez Lagos","Franco Andrés Monsalve Aracena","Bruno Rojas Arias"]},
+      {num:4,  proyecto:"Sistema de Acceso Automatizado Contactless",
+       estudiantes:["Matias Acevedo Cuevas","Benjamin Fuentes Toro","Matias Gomez Olguin","Enzo Robles Delgadillo"]},
+      {num:5,  proyecto:"Bastón Ultrasónico",
+       estudiantes:["Benjamin Gonzalez Vargas","Andrés Asaf Henríquez Barboza","Carlos Andrés Reinoso Pizarro","Vicente Tomás Verdejo Fuenzalida"]},
+      {num:6,  proyecto:"Transportador de Materiales Pesados",
+       estudiantes:["Anais Flores Tapia","Juliette Hughes Vergara","Catalina Maldonado Arancibia","Joaquín Sergio Riquelme Rojas"]},
+      {num:7,  proyecto:"Ventilador Portátil",
+       estudiantes:["Antonella Berndt Barria","Javier Gonzalez Chacana","Cristóbal Antonio Ríos Araya","Benjamin Rojas Cuevas"]},
+      {num:8,  proyecto:"Silla Móvil",
+       estudiantes:["Mayte Ignacia Cárcamo Serrano","Maria Davila Borquez","Bastián Alejandro Huenchual Arredondo","Alessandra Anahí León Tapia","Javiera Muñoz Miranda","Fania Prado Rojas"]},
+      {num:9,  proyecto:"Sistema de Riego Automático",
+       estudiantes:["Gaspar Maximiliano Araya Passalacqua","Lucas Araya Pena","Marco Jimenez Rivadeneira"]},
+      {num:10, proyecto:"Convertidor de Energía Undimotriz para Zonas Costeras",
+       estudiantes:["Roberto Andres Jara Rios","Maximiliano Munoz Serrano","Martin Saldias Latoja"]}
+    ]
+  },
+  "ICM1010-02":{
+    profesor:"Gustavo Morales",
+    grupos:[
+      {num:1,  proyecto:"Dispositivo Amortiguador de Impactos",
+       estudiantes:["Gonzalo Andres Azócar Echeverría","José Miguel Cáceres Tapia","Bastián Ignacio Contador Vega","Diego Andrés Núñez Figueroa","Diego Antonio Orellana Soza","Tomas Ignacio Rodriguez Muñoz"]},
+      {num:2,  proyecto:"Montaje Chipeadora",
+       estudiantes:["Rodrigo Ignacio Apablaza Nanjari","Isidora Graciela Araya Pacheco","Valentina Paz Herrera Barraza","Iam Nicolás Moreno Astudillo","Manuel Alonso Petricic Pinto"]},
+      {num:3,  proyecto:"Sistema de Transporte de Tipo Banda",
+       estudiantes:["Laura Andrea Allendes Leiva","Valentina Antonia Paine Mendoza","Antonia Millaray Del Carmen Rivera Pastén","Rafael Ignacio Soto Soto","Alonso Said Titus Santibáñez"]},
+      {num:4,  proyecto:"Sistema de Generación de Energía",
+       estudiantes:["Juan David González Arbea","Bruno Mladineo Juárez","Christian Augusto Schnettler Bohle","Inti Ignacio Schultzki Fica","Felipe Eugenio Silva Mora"]},
+      {num:5,  proyecto:"Sistema de Dosificación de Material",
+       estudiantes:["Rodrigo Alonso Albornoz Parra","Gustavo Alonso Hidalgo Alicera","Sebastián Okotie Panire Weishaupt","Lukas Ikki Tapia Baeza","Sofía Ignacia Zavala Torres"]},
+      {num:6,  proyecto:"Sistema de Enfriamiento Pasivo",
+       estudiantes:["Pablo Antonio Fernández Ramirez","Joshua Benjamín Meza Pizarro","Benjamín Ernesto Miranda Rojas","Maximiliano Rafael Salazar Barazarte","Johana Cristal Vaca Melgar"]},
+      {num:7,  proyecto:"Prensa Manual Optimizada",
+       estudiantes:["Maximiliano Andrés Ahumada Gálvez","Raphael Maximiliano Carrasco Ahumada","Agustín Andrés Mesa Arancibia","Cristóbal Benjamín Rivera Jara"]},
+      {num:8,  proyecto:"Vehículo Impulsado con Energía Elástica",
+       estudiantes:["Martina Ariannys Contreras Contreras","Matías Ignacio Fuentes Banz","Joaquín David Gaete Arancibia","Antonia Belén González Espinoza","Vicente Pablo Sazo Quiroz","Elunei Fernanda Solís Muñoz"]},
+      {num:9,  proyecto:"Sistema de Elevación Manual con Eficiencia Optimizada",
+       estudiantes:["Diego Emilio Cortés Olivares","Rodrigo Eduardo Jara Sanchez","Martín Alonso Vásquez Rivas","Camilo Antonio Yáñez Cortés","Bastián Alejandro Zapata Toledo"]}
+    ]
+  }
+};
+
+// Evaluadores (de evaluadores.json + lógica ampliada)
+// elizabeth: profesor ICM-01, puede ser externo de ICM-02
+// gustavo:   profesor ICM-02, puede ser externo de ICM-01
+// externoA/B/C: pueden evaluar ambos cursos
+const EVLS = [
+  {id:"elizabeth",nombre:"M. Elizabeth Berrio",tipo:"profesor",curso:"ICM1010-01",av:"👩‍🏫",bg:"#DBEAFE",fg:"1E40AF",
+   ext_puede:["ICM1010-02"]},
+  {id:"gustavo",  nombre:"Gustavo Morales",     tipo:"profesor",curso:"ICM1010-02",av:"👨‍🏫",bg:"#EDE9FE",fg:"5B21B6",
+   ext_puede:["ICM1010-01"]},
+  {id:"extA",     nombre:"Profesor Externo A",  tipo:"externo", curso:null,       av:"🎓",bg:"#D1FAE5",fg:"065F46",
+   ext_puede:["ICM1010-01","ICM1010-02"]},
+  {id:"extB",     nombre:"Profesor Externo B",  tipo:"externo", curso:null,       av:"🎓",bg:"#D1FAE5",fg:"065F46",
+   ext_puede:["ICM1010-01","ICM1010-02"]},
+  {id:"extC",     nombre:"Profesor Externo C",  tipo:"externo", curso:null,       av:"🎓",bg:"#D1FAE5",fg:"065F46",
+   ext_puede:["ICM1010-01","ICM1010-02"]},
+];
+
+const PREG = [
+  {id:"P1",tit:"Selección de materiales",col:"065A82",
+   txt:"¿Qué criterios utilizó para seleccionar los materiales empleados en su prototipo y qué impacto tendría reemplazarlos por otros materiales de menor costo o de mejores prestaciones? Justifique su respuesta desde un punto de vista técnico y económico."},
+  {id:"P2",tit:"Grado de innovación",col:"1C7293",
+   txt:"¿Cuál considera que es el principal elemento innovador de su prototipo? Explique qué problema resuelve, en qué se diferencia de soluciones existentes y qué valor agrega a los potenciales usuarios."},
+  {id:"P3",tit:"Escalamiento y factibilidad",col:"0D9488",
+   txt:"Si una empresa estuviera interesada en fabricar su prototipo a escala industrial, ¿cuáles serían las principales limitaciones técnicas, económicas o energéticas que deberían resolverse antes de su implementación? Proponga al menos una mejora para superar dichas limitaciones."},
+  {id:"P4",tit:"Análisis crítico del evaluador",col:"6D28D9",
+   txt:"Pregunta de profundización definida por la comisión evaluadora en función de las características particulares del prototipo presentado. Puede abordar aspectos de diseño, manufactura, seguridad, control, sostenibilidad, mantenimiento, costos, validación experimental u otro aspecto técnico relevante."},
+];
+
+// Aplanar grupos
+const ALL = [];
+["ICM1010-01","ICM1010-02"].forEach(sec=>{
+  GD[sec].grupos.forEach(g=>{
+    ALL.push({
+      id:`${sec}-G${g.num}`,num:g.num,sec,
+      prof_id:sec==="ICM1010-01"?"elizabeth":"gustavo",
+      proyecto:g.proyecto,estudiantes:g.estudiantes
+    });
+  });
+});
+
+// ══════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════
+let ST={asign:{},evals:{},evActivo:null,grActivo:null,charts:{}};
+try{const s=localStorage.getItem("ime1010_v5");if(s)ST=JSON.parse(s);}catch(e){}
+const sv=()=>{try{localStorage.setItem("ime1010_v5",JSON.stringify(ST));}catch(e){}};
+
+// ══════════════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════════════
+function go(n){
+  // Asignaciones: solo admin
+  if(n==="asignacion" && (!ST.sesion||!ST.sesion.esAdmin)) return;
+  document.querySelectorAll(".pg").forEach(p=>p.classList.remove("on"));
+  document.querySelectorAll(".nbtn").forEach(b=>b.classList.remove("on"));
+  const pg=document.getElementById("pg-"+n);
+  if(!pg)return;
+  pg.classList.add("on");
+  document.querySelectorAll(".nbtn").forEach(b=>{
+    if(b.getAttribute("onclick")&&b.getAttribute("onclick").includes("'"+n+"'"))b.classList.add("on");
+  });
+  if(n==="inicio")    rInicio();
+  if(n==="asignacion")rAsign();
+  if(n==="evaluar")   rStep1();
+  if(n==="dashboard") renderDash();
+}
+
+// ══════════════════════════════════════════════════════════════
+// INICIO
+// ══════════════════════════════════════════════════════════════
+function rInicio(){
+  let comp=0,sumN=0,cntN=0;
+  ALL.forEach(g=>{
+    const r=calcNF(g.id);
+    if(r.comp)comp++;
+    [r.nP,r.nE,r.nS].filter(x=>x!==null).forEach(x=>{sumN+=x;cntN++;});
+  });
+  const pct=Math.round(comp/ALL.length*100);
+  const prom=cntN>0?(sumN/cntN).toFixed(1):"—";
+  document.getElementById("k0").textContent=ALL.length;
+  document.getElementById("k1").textContent=comp;
+  document.getElementById("k2").textContent=pct+"%";
+  document.getElementById("k3").textContent=prom;
+  document.getElementById("prog").innerHTML=`
+    <div style="display:flex;justify-content:space-between;margin-bottom:.38rem;font-size:.76rem">
+      <span><strong>${comp}</strong> de ${ALL.length} grupos con evaluación completa</span><span>${pct}%</span>
+    </div>
+    <div class="pb"><div class="pbi" style="width:${pct}%"></div></div>`;
+  ["01","02"].forEach(x=>{
+    const sec=`ICM1010-${x}`;
+    document.getElementById(`res${x}`).innerHTML=
+      ALL.filter(g=>g.sec===sec).map(g=>{
+        const r=calcNF(g.id);
+        const nc=r.nF?`<strong style="color:${cn(r.nF)}">${r.nF.toFixed(1)}</strong>`:"—";
+        return `<div style="display:flex;justify-content:space-between;align-items:center;
+          padding:.35rem 0;border-bottom:1px solid var(--border);font-size:.79rem">
+          <span>G${g.num} · ${g.proyecto.substring(0,36)}${g.proyecto.length>36?"…":""}</span>
+          <span>${r.comp?"✅":r.nF?"⏳":""} ${nc}</span>
+        </div>`;
+      }).join("");
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// ASIGNACIONES
+// ══════════════════════════════════════════════════════════════
+function shuf(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
+
+function genAsign(){
+  // Solo puede ejecutarlo Elizabeth Berrio (admin)
+  if(!ST.sesion || !ST.sesion.esAdmin){
+    alert("Solo la profesora M. Elizabeth Berrio puede generar las asignaciones.");
+    return;
+  }
+  // Si ya existen asignaciones, pedir confirmación antes de regenerar
+  if(ST.asign && Object.keys(ST.asign).length){
+    const ok = confirm(
+      "⚠️ Ya existen asignaciones generadas.\n\n" +
+      "Si las regeneras, los grupos y estudiantes serán redistribuidos aleatoriamente.\n" +
+      "Las evaluaciones ya guardadas NO se borran, pero podrían quedar con el evaluador incorrecto.\n\n" +
+      "¿Deseas continuar?"
+    );
+    if(!ok) return;
+  }
+  const asign={};
+
+  // Pool externos por sección (con restricciones de conflicto)
+  const extPool={
+    "ICM1010-01":["gustavo","extA","extB","extC"],  // elizabeth NO puede evaluar externamente su propio curso
+    "ICM1010-02":["elizabeth","extA","extB","extC"] // gustavo NO puede evaluar externamente su propio curso
+  };
+
+  // Contador de carga
+  const cnt={};EVLS.forEach(e=>cnt[e.id]=0);
+
+  ["ICM1010-01","ICM1010-02"].forEach(sec=>{
+    const gs=shuf(ALL.filter(g=>g.sec===sec));
+    gs.forEach(g=>{
+      asign[g.id]=asign[g.id]||{};
+      // Elegir externo con menor carga del pool permitido
+      const pool=extPool[sec];
+      const chosen=pool.slice().sort((a,b)=>cnt[a]-cnt[b])[0];
+      cnt[chosen]++;
+      asign[g.id].externo=chosen;
+    });
+  });
+
+  // Estudiantes: del curso contrario — asignar 1 estudiante específico por grupo
+  // El estudiante queda como evaluador con slot "estudiante" en el grupo que evalúa
+  const estPool={};
+  ["ICM1010-01","ICM1010-02"].forEach(sec=>{
+    estPool[sec]=[];
+    GD[sec].grupos.forEach(g=>g.estudiantes.forEach((e,ei)=>estPool[sec].push({
+      nombre:e,
+      gNum:g.num,
+      sec,
+      // ID único para identificar al estudiante como evaluador
+      evId:`est_${sec.replace("-","")}_g${g.num}_${ei}`
+    })));
+  });
+  // Para cada grupo, asignar 1 estudiante del curso contrario
+  // Además, construir índice inverso: qué grupos evalúa cada estudiante-evaluador
+  const estAsignados={};  // evId -> [gid que evalúa]
+  ["ICM1010-01","ICM1010-02"].forEach(sec=>{
+    const op=sec==="ICM1010-01"?"ICM1010-02":"ICM1010-01";
+    const pool=shuf(estPool[op]);
+    ALL.filter(g=>g.sec===sec).forEach((g,i)=>{
+      asign[g.id]=asign[g.id]||{};
+      const est=pool[i%pool.length];
+      asign[g.id].estudiante=est;
+      // Registrar qué grupos evalúa este estudiante
+      if(!estAsignados[est.evId]) estAsignados[est.evId]=[];
+      estAsignados[est.evId].push(g.id);
+    });
+  });
+  // Guardar el índice inverso en el state para usarlo en la pestaña Evaluar
+  ST.estAsignados=estAsignados;
+
+  ST.asign=asign;sv();rAsign();
+  // Si estamos en la pestaña evaluar, refrescar también el selector de evaluadores
+  if(document.getElementById("pg-evaluar").classList.contains("on")){
+    rStep1();
+  }
+}
+
+function rAsign(){
+  const out=document.getElementById("assign-out");
+  if(!Object.keys(ST.asign).length){
+    out.innerHTML='<div class="al alw">Genera asignaciones con el botón de arriba.</div>';return;
+  }
+  let h="";
+  ["ICM1010-01","ICM1010-02"].forEach(sec=>{
+    const gs=ALL.filter(g=>g.sec===sec);
+    const bc=sec==="ICM1010-01"?"s01":"s02";
+    h+=`<div class="card">
+      <div class="ctit"><span class="sbadge ${bc}">${sec}</span>&nbsp;${GD[sec].profesor}</div>
+      <div style="overflow-x:auto"><table class="tbl"><thead><tr>
+        <th>Grupo</th><th>Proyecto</th>
+        <th>👩‍🏫 Profesor del curso</th>
+        <th>🎓 Evaluador externo</th>
+        <th>🎒 Estudiante evaluador (curso contrario)</th>
+      </tr></thead><tbody>`;
+    gs.forEach(g=>{
+      const a=ST.asign[g.id]||{};
+      const pobj=EVLS.find(e=>e.id===g.prof_id);
+      const eobj=EVLS.find(e=>e.id===a.externo);
+      const est=a.estudiante;
+      h+=`<tr>
+        <td><strong>G${g.num}</strong></td>
+        <td style="max-width:180px;font-size:.76rem">${g.proyecto}</td>
+        <td><span class="pill ppf">${pobj?pobj.nombre:"—"}</span></td>
+        <td><span class="pill ppe">${eobj?eobj.nombre:"—"}</span></td>
+        <td style="font-size:.74rem">${est
+          ?`<span class="pill pps">${est.nombre}</span><br><span class="tm">Grupo ${est.gNum} de ${est.sec}</span>`
+          :"—"
+        }</td>
+      </tr>`;
+    });
+    h+=`</tbody></table></div></div>`;
+  });
+
+  // Carga por evaluador externo
+  const cnt={};EVLS.forEach(e=>cnt[e.id]=0);
+  Object.values(ST.asign).forEach(a=>{if(a.externo)cnt[a.externo]=(cnt[a.externo]||0)+1;});
+  h+=`<div class="card"><div class="ctit">⚖️ Distribución de evaluaciones externas</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:.72rem">`;
+  EVLS.forEach(e=>{
+    h+=`<div style="background:var(--bg);border-radius:10px;padding:.82rem;text-align:center">
+      <div style="font-size:1.5rem">${e.av}</div>
+      <div style="font-weight:700;font-size:.78rem;color:var(--navy);margin:.25rem 0">${e.nombre}</div>
+      <div style="font-size:1.7rem;font-weight:900;color:var(--deep)">${cnt[e.id]||0}</div>
+      <div class="tm">grupos como externo</div>
+    </div>`;
+  });
+  h+=`</div></div>`;
+  out.innerHTML=h;
+}
+
+function expAsignXL(){
+  if(!Object.keys(ST.asign).length){alert("Genera asignaciones primero.");return;}
+  const wb=XLSX.utils.book_new();
+  const r=[["Grupo","Sección","Proyecto","Profesor del curso","Evaluador externo","Estudiante","Sección estudiante","Grupo estudiante"]];
+  ALL.forEach(g=>{
+    const a=ST.asign[g.id]||{};
+    const po=EVLS.find(e=>e.id===g.prof_id);
+    const eo=EVLS.find(e=>e.id===a.externo);
+    r.push([`G${g.num}`,g.sec,g.proyecto,
+      po?po.nombre:"—",eo?eo.nombre:"—",
+      a.estudiante?a.estudiante.nombre:"—",
+      a.estudiante?a.estudiante.sec:"—",
+      a.estudiante?`G${a.estudiante.gNum}`:"—"
+    ]);
+  });
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(r),"Asignaciones");
+  XLSX.writeFile(wb,"Asignaciones_IME1010_2026.xlsx");
+}
+
+// ══════════════════════════════════════════════════════════════
+// PASO 1 — EVALUAR
+// Con sesión activa, la identidad ya está validada: mostrar directamente los grupos asignados
+// ══════════════════════════════════════════════════════════════
+function rStep1(){
+  ["s1","s2","s3"].forEach((id,i)=>document.getElementById(id).style.display=i===0?"":"none");
+
+  if(!ST.sesion){
+    document.getElementById("ev-grid").innerHTML=
+      `<div class="al alw" style="grid-column:1/-1">Debes iniciar sesión para evaluar.</div>`;
+    return;
+  }
+
+  // Usar directamente la identidad de la sesión
+  ST.evActivo = ST.sesion.evId;
+  sv();
+
+  // Verificar si hay asignaciones
+  if(!ST.asign||!Object.keys(ST.asign).length){
+    document.getElementById("ev-grid").innerHTML=
+      `<div class="al alw" style="grid-column:1/-1">
+        Las asignaciones aún no han sido generadas.
+        ${ST.sesion.esAdmin
+          ? `<br><a href="#" onclick="go('asignacion')" style="color:var(--deep);font-weight:700">→ Ir a Asignaciones para generarlas</a>`
+          : "<br>Contacta a la profesora M. Elizabeth Berrio."}
+      </div>`;
+    return;
+  }
+
+  // Verificar si este usuario tiene grupos asignados
+  const gruposAsignados=gruposDeEv(ST.evActivo);
+  const esObservador=gruposAsignados.length===0 && ST.sesion.tipo==="estudiante";
+
+  const s=ST.sesion;
+  const icono=s.tipo==="profesor"?"👩‍🏫":s.tipo==="estudiante"?"🎒":"🎓";
+  const rolLabel=s.tipo==="profesor"
+    ? (s.evId==="elizabeth"?"Profesora ICM1010-01":"Profesor ICM1010-02")
+    : s.tipo==="estudiante"
+    ? `Estudiante · ${s.secOrigen||""}`
+    : "Evaluador externo";
+
+  document.getElementById("ev-grid").innerHTML=`
+    <div style="grid-column:1/-1;display:flex;align-items:center;gap:1rem;
+      background:var(--bg);border-radius:12px;padding:1rem 1.25rem;margin-bottom:.5rem">
+      <div style="font-size:2.2rem">${icono}</div>
+      <div>
+        <div style="font-weight:800;font-size:.95rem;color:var(--navy)">${s.nombre}</div>
+        <div style="font-size:.74rem;color:var(--gray)">${rolLabel}</div>
+        <div style="font-size:.7rem;color:var(--teal);margin-top:.1rem">${s.email}</div>
+      </div>
+    </div>
+    ${esObservador
+      ? `<div style="grid-column:1/-1" class="al alw">
+          No tienes grupos asignados para evaluar en esta ronda. 
+          Puedes ver el Dashboard con los resultados.
+        </div>`
+      : `<div style="grid-column:1/-1">
+          <button class="btn bp2" onclick="irAGrupos()" style="width:100%;padding:.75rem;font-size:.9rem;justify-content:center">
+            📋 Ver mis grupos asignados →
+          </button>
+        </div>`
+    }`;
+}
+
+function irAGrupos(){
+  if(!ST.sesion) return;
+  ST.evActivo=ST.sesion.evId;
+  sv();
+  const e=ST.sesion;
+  const rolLabel=e.tipo==="profesor"?e.email:e.tipo==="estudiante"?`Estudiante — Grupo ${e.grupoOrigen||""}`:"Evaluador externo";
+  document.getElementById("ev-info").innerHTML=
+    `Sesión activa: <strong>${e.nombre}</strong> · <span style="color:var(--teal)">${e.email}</span>`;
+  document.getElementById("s1").style.display="none";
+  document.getElementById("s2").style.display="";
+  document.getElementById("fsec").value="";
+  document.getElementById("fq").value="";
+  renderGrupos();
+}
+
+function selEv(id){
+  // Mantenida por compatibilidad pero no se usa en el flujo con login
+  ST.evActivo=id;sv();
+  irAGrupos();
+}
+
+function encontrarEstudianteEv(evId){
+  for(const a of Object.values(ST.asign||{})){
+    if(a.estudiante && a.estudiante.evId===evId) return a.estudiante;
+  }
+  return null;
+}
+
+function back1(){
+  ["s1","s2","s3"].forEach((id,i)=>document.getElementById(id).style.display=i===0?"":"none");
+  rStep1();
+}
+
+// ══════════════════════════════════════════════════════════════
+// PASO 2 — ELEGIR GRUPO
+// Muestra SOLO los grupos asignados a este evaluador
+// ══════════════════════════════════════════════════════════════
+function gruposDeEv(evId){
+  if(!ST.asign || !Object.keys(ST.asign).length){
+    // Sin asignaciones: fallback para profesores por curso
+    const e=EVLS.find(x=>x.id===evId);
+    if(e && e.tipo==="profesor") return ALL.filter(g=>g.sec===e.curso);
+    return [];
+  }
+
+  const eFixed=EVLS.find(x=>x.id===evId);
+
+  if(eFixed){
+    // Profesor del curso: los grupos donde es "profesor" (su propio curso)
+    // + grupos donde fue asignado como "externo"
+    const gidsComoProf  = eFixed.tipo==="profesor"
+      ? ALL.filter(g=>g.sec===eFixed.curso).map(g=>g.id)
+      : [];
+    const gidsComoExt = Object.entries(ST.asign)
+      .filter(([gid,a])=>a.externo===evId)
+      .map(([gid])=>gid);
+    const todos=new Set([...gidsComoProf,...gidsComoExt]);
+    return ALL.filter(g=>todos.has(g.id));
+  } else {
+    // Estudiante evaluador: los grupos donde fue asignado como estudiante
+    const gids=Object.entries(ST.asign)
+      .filter(([gid,a])=>a.estudiante && a.estudiante.evId===evId)
+      .map(([gid])=>gid);
+    return ALL.filter(g=>gids.includes(g.id));
+  }
+}
+
+function rolEv(evId,gid){
+  const g=ALL.find(x=>x.id===gid);
+  if(!g) return "externo";
+  // Si es el profesor del curso → rol "profesor"
+  if(g.prof_id===evId) return "profesor";
+  // Si es el estudiante asignado a este grupo → rol "estudiante"
+  const a=ST.asign[gid]||{};
+  if(a.estudiante && a.estudiante.evId===evId) return "estudiante";
+  // Cualquier otro (externo asignado) → rol "externo"
+  return "externo";
+}
+
+function renderGrupos(){
+  const sec=document.getElementById("fsec").value;
+  const q=(document.getElementById("fq").value||"").toLowerCase();
+
+  // Verificar si hay asignaciones
+  if(!ST.asign || !Object.keys(ST.asign).length){
+    document.getElementById("grupos-grid").innerHTML=
+      '<div class="al alw">⚠️ Primero debes ir a la pestaña <strong>🎲 Asignaciones</strong> y generar las asignaciones aleatorias.</div>';
+    return;
+  }
+
+  let gs=gruposDeEv(ST.evActivo);
+  if(!gs.length){
+    document.getElementById("grupos-grid").innerHTML=
+      '<div class="al alw">Este evaluador no tiene grupos asignados aún. Genera las asignaciones primero.</div>';
+    return;
+  }
+  if(sec)gs=gs.filter(g=>g.sec===sec);
+  if(q)gs=gs.filter(g=>g.proyecto.toLowerCase().includes(q)||String(g.num).includes(q)||g.estudiantes.some(s=>s.toLowerCase().includes(q)));
+
+  const grid=document.getElementById("grupos-grid");
+  if(!gs.length){grid.innerHTML='<div class="al alw">No se encontraron grupos con ese criterio.</div>';return;}
+
+  grid.innerHTML=gs.map(g=>{
+    const rol=rolEv(ST.evActivo,g.id);
+    const evSlot=(ST.evals[g.id]||{})[rol];
+    const done=evSlot&&evSlot.notas&&Object.values(evSlot.notas).filter(v=>v>0).length===4;
+    const bc=g.sec==="ICM1010-01"?"s01":"s02";
+    const rolLabel=rol==="profesor"?"Profesor del curso":rol==="estudiante"?"Estudiante evaluador":"Evaluador externo";
+    const rolColor=rol==="profesor"?"#1E40AF":rol==="estudiante"?"#92400E":"#065F46";
+    const rolBg=rol==="profesor"?"#DBEAFE":rol==="estudiante"?"#FEF3C7":"#D1FAE5";
+    return `<div class="gc ${done?"done":""}" onclick="selGrupo('${g.id}')">
+      <div class="${done?"stok":"stpd"} gst"></div>
+      <div class="gh">
+        <div class="gnum">${g.num}</div>
+        <span class="sbadge ${bc}">${g.sec}</span>
+      </div>
+      <div class="gproj">${g.proyecto}</div>
+      <div class="gmem">${g.estudiantes.slice(0,3).join(" · ")}${g.estudiantes.length>3?` +${g.estudiantes.length-3} más`:""}</div>
+      <div style="margin-top:.42rem">
+        <span style="font-size:.65rem;font-weight:700;padding:.18rem .5rem;border-radius:99px;background:${rolBg};color:${rolColor}">${rolLabel}</span>
+      </div>
+      ${done?'<div style="margin-top:.38rem;font-size:.69rem;color:var(--ok);font-weight:700">✅ Ya evaluado — clic para editar</div>':""}
+    </div>`;
+  }).join("");
+}
+
+function back2(){
+  document.getElementById("s2").style.display="";
+  document.getElementById("s3").style.display="none";
+}
+
+// ══════════════════════════════════════════════════════════════
+// PASO 3 — FORMULARIO
+// ══════════════════════════════════════════════════════════════
+function selGrupo(gid){
+  ST.grActivo=gid;
+  const g=ALL.find(x=>x.id===gid);
+  const rol=rolEv(ST.evActivo,gid);
+
+  // El evaluador puede ser un profesor/externo (en EVLS) o un estudiante (en ST.sesion)
+  const eFixed=EVLS.find(x=>x.id===ST.evActivo);
+  const evNombre = eFixed ? eFixed.nombre : (ST.sesion ? ST.sesion.nombre : ST.evActivo);
+  const evIcono  = eFixed ? eFixed.av     : (ST.sesion && ST.sesion.tipo==="estudiante" ? "🎒" : "🎓");
+  const rolLabel = rol==="profesor" ? "Profesor del curso" : rol==="estudiante" ? "Estudiante evaluador" : "Evaluador externo";
+
+  document.getElementById("ftit").innerHTML=`${evIcono} Evaluando: Grupo ${g.num} — ${g.proyecto}`;
+  document.getElementById("fsub").innerHTML=
+    `Evaluador: <strong>${evNombre}</strong> · Sección: <strong>${g.sec}</strong> · Rol: <strong>${rolLabel}</strong>`;
+
+  const ex=((ST.evals[gid]||{})[rol])||{};
+  const notas=ex.notas||{};const coms=ex.coms||{};const q4c=ex.q4c||"";
+
+  document.getElementById("form-qs").innerHTML=PREG.map((p,i)=>{
+    const n=notas[p.id]||0;
+    const vals=[];for(let v=10;v<=70;v++)vals.push(+(v/10).toFixed(1));
+    const btns=vals.map(v=>{
+      const cls=v<4?"bajo":v<5.5?"med":"alto";
+      const sel=n===v?"S "+cls:"";
+      return `<button class="nb ${cls} ${sel}" onclick="setN('${p.id}',${v},this)">${v.toFixed(1)}</button>`;
+    }).join("");
+    const q4extra=p.id==="P4"?`
+      <div style="margin-bottom:.5rem">
+        <label style="font-size:.73rem;font-weight:700;color:var(--navy);display:block;margin-bottom:.28rem">
+          📝 Escribe aquí tu pregunta específica de profundización:
+        </label>
+        <input class="q4inp" id="q4t" type="text"
+          placeholder="Ej: ¿Cómo abordaron la fatiga del material en ciclos de carga repetida?"
+          value="${q4c.replace(/"/g,'&quot;')}">
+      </div>`:"";
+    return `<div class="qb" style="border-left-color:#${p.col}">
+      <div class="qlbl" style="color:#${p.col}">Pregunta ${i+1} · ${p.tit}</div>
+      <div class="qtxt">${p.txt}</div>
+      ${q4extra}
+      <div class="nrow" id="nr-${p.id}">${btns}</div>
+      <div style="display:flex;align-items:center;gap:.95rem;margin-bottom:.62rem">
+        <span style="font-size:.76rem;color:var(--gray)">Nota seleccionada:</span>
+        <span class="nlive" id="nl-${p.id}">${n>0?n.toFixed(1):"—"}</span>
+      </div>
+      <textarea class="cmt" id="cm-${p.id}" placeholder="Comentarios opcionales…">${coms[p.id]||""}</textarea>
+    </div>`;
+  }).join("");
+
+  document.getElementById("s2").style.display="none";
+  document.getElementById("s3").style.display="";
+  updLive();
+}
+
+function setN(pid,val,btn){
+  document.querySelectorAll(`#nr-${pid} .nb`).forEach(b=>{b.classList.remove("S","bajo","med","alto");});
+  btn.classList.add("S");
+  const cls=val<4?"bajo":val<5.5?"med":"alto";
+  btn.classList.add(cls);
+  document.getElementById(`nl-${pid}`).textContent=val.toFixed(1);
+  updLive();
+}
+
+function getNotas(){
+  const n={};
+  PREG.forEach(p=>{const s=document.querySelector(`#nr-${p.id} .nb.S`);n[p.id]=s?parseFloat(s.textContent):0;});
+  return n;
+}
+
+function updLive(){
+  const n=getNotas();
+  const vs=Object.values(n).filter(v=>v>0);
+  document.getElementById("live-n").textContent=vs.length===0?"—":(vs.reduce((a,b)=>a+b,0)/vs.length).toFixed(1);
+}
+
+function saveEval(){
+  const notas=getNotas();
+  const sin=PREG.filter(p=>!(notas[p.id]>0));
+  if(sin.length){alert(`Asigna nota a: ${sin.map(p=>p.tit).join(", ")}`);return;}
+  const coms={};PREG.forEach(p=>{coms[p.id]=document.getElementById(`cm-${p.id}`).value;});
+  const q4el=document.getElementById("q4t");
+  const q4c=q4el?q4el.value:"";
+  const rol=rolEv(ST.evActivo,ST.grActivo);
+  if(!ST.evals[ST.grActivo])ST.evals[ST.grActivo]={};
+  ST.evals[ST.grActivo][rol]={notas,coms,q4c,evId:ST.evActivo};
+  sv();
+  const prom=(Object.values(notas).reduce((a,b)=>a+b,0)/4).toFixed(1);
+  const g=ALL.find(x=>x.id===ST.grActivo);
+  // Obtener nombre del evaluador (puede ser estudiante o evaluador fijo)
+  const eFixed=EVLS.find(x=>x.id===ST.evActivo);
+  const evNombre = eFixed
+    ? eFixed.nombre
+    : (encontrarEstudianteEv(ST.evActivo)||{}).nombre
+      || (ST.sesion ? ST.sesion.nombre : ST.evActivo);
+  const rolLabel=rol==="profesor"?"Profesor del curso":rol==="estudiante"?"Estudiante evaluador":"Evaluador externo";
+  document.getElementById("mok-body").innerHTML=
+    `<strong>Grupo ${g.num}</strong> — ${g.proyecto}<br>
+     Evaluado por: <strong>${evNombre}</strong><br>
+     Rol: <strong>${rolLabel}</strong><br>
+     <div style="font-size:2.3rem;font-weight:900;color:var(--deep);margin:.55rem 0">${prom}</div>
+     Promedio de las 4 preguntas`;
+  document.getElementById("mok").classList.add("on");
+}
+
+function evalOtro(){
+  cModal("mok");
+  document.getElementById("s2").style.display="";
+  document.getElementById("s3").style.display="none";
+  renderGrupos();
+}
+
+// ══════════════════════════════════════════════════════════════
+// CÁLCULO NOTA FINAL
+// Nota Profesor  = promedio P1..P4 del evaluador con rol "profesor"
+// Nota Externo   = promedio P1..P4 del evaluador con rol "externo"
+// Nota Estudiante = el evaluador externo también puede registrar la nota del estudiante
+// Para esta implementación: el estudiante evaluador usa la plataforma como "externo"
+// y queda guardado en el slot "estudiante" si se distingue por evId
+// ══════════════════════════════════════════════════════════════
+function calcNF(gid){
+  const ev=ST.evals[gid]||{};
+  const prom=d=>{if(!d||!d.notas)return null;const vs=Object.values(d.notas).filter(v=>v>0);return vs.length===4?vs.reduce((a,b)=>a+b,0)/4:null;};
+  const nP=prom(ev.profesor);
+  const nE=prom(ev.externo);
+  const nS=prom(ev.estudiante);  // slot adicional para evaluación estudiantil
+  const arr=[nP,nE,nS].filter(x=>x!==null);
+  const nF=arr.length>0?arr.reduce((a,b)=>a+b,0)/arr.length:null;
+  return{nP,nE,nS,nF,comp:nP!==null&&nE!==null};
+}
+
+function cn(n){if(!n)return"var(--gray)";if(n>=5.5)return"var(--ok)";if(n>=4)return"var(--warn)";return"var(--err)";}
+
+// ══════════════════════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════════════════════
+function renderDash(){renderRank();renderEvEst();renderCharts();}
+
+function renderRank(){
+  const sec=document.getElementById("dflt").value;
+  const gs=sec?ALL.filter(g=>g.sec===sec):ALL;
+  const dat=gs.map(g=>({g,...calcNF(g.id)})).sort((a,b)=>{
+    if(a.nF===null&&b.nF===null)return 0;
+    if(a.nF===null)return 1;if(b.nF===null)return-1;return b.nF-a.nF;
+  });
+  const md=["🥇","🥈","🥉"];
+  let h=`<table class="tbl"><thead><tr>
+    <th>#</th><th>Grupo</th><th>Sección</th><th>Proyecto</th>
+    <th>Nota Profesor</th><th>Nota Externo</th><th>Nota Estudiante</th><th>NOTA FINAL</th><th>Estado</th>
+  </tr></thead><tbody>`;
+  dat.forEach((d,i)=>{
+    const m=i<3&&d.nF?md[i]:i+1;
+    const bc=d.g.sec==="ICM1010-01"?"s01":"s02";
+    h+=`<tr>
+      <td><strong>${m}</strong></td>
+      <td><strong>G${d.g.num}</strong></td>
+      <td><span class="sbadge ${bc}">${d.g.sec}</span></td>
+      <td style="font-size:.74rem;max-width:165px">${d.g.proyecto}</td>
+      <td style="color:${cn(d.nP)};font-weight:700">${d.nP?d.nP.toFixed(1):"—"}</td>
+      <td style="color:${cn(d.nE)};font-weight:700">${d.nE?d.nE.toFixed(1):"—"}</td>
+      <td style="color:${cn(d.nS)};font-weight:700">${d.nS?d.nS.toFixed(1):"—"}</td>
+      <td style="font-size:1.1rem;font-weight:900;color:${cn(d.nF)}">${d.nF?d.nF.toFixed(1):"—"}</td>
+      <td>${d.comp?"✅":"⏳"}</td>
+    </tr>`;
+  });
+  h+="</tbody></table>";
+  document.getElementById("rank-out").innerHTML=h;
+}
+
+function renderEvEst(){
+  const roles=[
+    {id:"elizabeth",lbl:"👩‍🏫 Elizabeth Berrio (Profesora ICM-01)",rol:"profesor",sec:"ICM1010-01"},
+    {id:"gustavo",  lbl:"👨‍🏫 Gustavo Morales (Profesor ICM-02)", rol:"profesor",sec:"ICM1010-02"},
+    {id:"extA",     lbl:"🎓 Profesor Externo A", rol:"externo",sec:null},
+    {id:"extB",     lbl:"🎓 Profesor Externo B", rol:"externo",sec:null},
+    {id:"extC",     lbl:"🎓 Profesor Externo C", rol:"externo",sec:null},
+  ];
+  let h='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:.72rem">';
+  roles.forEach(r=>{
+    const gs=r.sec?ALL.filter(g=>g.sec===r.sec):ALL.filter(g=>{
+      const a=ST.asign[g.id]||{};return a.externo===r.id;
+    });
+    const done=gs.filter(g=>{
+      const ev=(ST.evals[g.id]||{})[r.rol];
+      return ev&&ev.evId===r.id&&ev.notas&&Object.values(ev.notas).filter(v=>v>0).length===4;
+    }).length;
+    const total=gs.length;
+    const pct=total>0?Math.round(done/total*100):0;
+    h+=`<div style="background:#fff;border-radius:10px;padding:.9rem;box-shadow:var(--shadow)">
+      <div style="font-weight:700;font-size:.78rem;color:var(--navy);margin-bottom:.38rem">${r.lbl}</div>
+      <div class="tm" style="margin-bottom:.32rem">${done}/${total} grupos evaluados</div>
+      <div class="pb"><div class="pbi" style="width:${pct}%"></div></div>
+    </div>`;
+  });
+
+  // Agregar estado de estudiantes evaluadores
+  if(ST.asign && Object.keys(ST.asign).length){
+    const estudiantesEv={};
+    Object.entries(ST.asign).forEach(([gid,a])=>{
+      if(a.estudiante && a.estudiante.evId){
+        const eid=a.estudiante.evId;
+        if(!estudiantesEv[eid]) estudiantesEv[eid]={datos:a.estudiante,grupos:[]};
+        estudiantesEv[eid].grupos.push(gid);
+      }
+    });
+    // Agrupar por sección de origen del estudiante
+    const estBySec={"ICM1010-01":[],"ICM1010-02":[]};
+    Object.values(estudiantesEv).forEach(ev=>{
+      estBySec[ev.datos.sec]?.push(ev);
+    });
+    // Mostrar resumen compacto
+    const totalEsts=Object.values(estudiantesEv).length;
+    const doneEsts=Object.values(estudiantesEv).filter(ev=>{
+      return ev.grupos.every(gid=>{
+        const e=(ST.evals[gid]||{}).estudiante;
+        return e&&e.evId===ev.datos.evId&&e.notas&&Object.values(e.notas).filter(v=>v>0).length===4;
+      });
+    }).length;
+    const pctE=totalEsts>0?Math.round(doneEsts/totalEsts*100):0;
+    h+=`<div style="background:#fff;border-radius:10px;padding:.9rem;box-shadow:var(--shadow)">
+      <div style="font-weight:700;font-size:.78rem;color:var(--navy);margin-bottom:.38rem">🎒 Estudiantes evaluadores (${totalEsts} activos)</div>
+      <div class="tm" style="margin-bottom:.32rem">${doneEsts}/${totalEsts} completaron su evaluación</div>
+      <div class="pb"><div class="pbi" style="width:${pctE}%;background:var(--warn)"></div></div>
+    </div>`;
+  }
+
+  h+="</div>";
+  document.getElementById("ev-estado").innerHTML=h;
+}
+
+function renderCharts(){
+  Object.values(ST.charts).forEach(c=>{try{c.destroy();}catch(e){}});ST.charts={};
+  const ns=ALL.map(g=>calcNF(g.id).nF).filter(n=>n!==null);
+  const bins=[0,0,0,0,0,0];
+  ns.forEach(n=>{const i=Math.min(Math.floor(n)-1,5);if(i>=0)bins[i]++;});
+  ST.charts.h=new Chart(document.getElementById("ch-hist").getContext("2d"),{
+    type:"bar",
+    data:{labels:["1.0–2.0","2.0–3.0","3.0–4.0","4.0–5.0","5.0–6.0","6.0–7.0"],
+      datasets:[{label:"Grupos",data:bins,backgroundColor:["#EF4444","#F97316","#EAB308","#22C55E","#3B82F6","#8B5CF6"],borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}
+  });
+  const gp=sec=>{const r=ALL.filter(g=>g.sec===sec).map(g=>calcNF(g.id).nF).filter(n=>n!==null);return r.length?(r.reduce((a,b)=>a+b,0)/r.length).toFixed(2):0;};
+  ST.charts.s=new Chart(document.getElementById("ch-sec").getContext("2d"),{
+    type:"bar",
+    data:{labels:["ICM1010-01","ICM1010-02"],datasets:[{label:"Promedio",data:[gp("ICM1010-01"),gp("ICM1010-02")],backgroundColor:["#065A82","#6D28D9"],borderRadius:8}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:7,ticks:{stepSize:1}}}}
+  });
+}
+
+function expDashXL(){
+  const wb=XLSX.utils.book_new();
+  const r=[["Grupo","Sección","Proyecto","Nota Profesor","Nota Externo","Nota Estudiante","Nota Final","Estado"]];
+  ALL.forEach(g=>{
+    const d=calcNF(g.id);
+    r.push([`G${g.num}`,g.sec,g.proyecto,
+      d.nP?d.nP.toFixed(1):"Pendiente",d.nE?d.nE.toFixed(1):"Pendiente",
+      d.nS?d.nS.toFixed(1):"Pendiente",d.nF?d.nF.toFixed(1):"Pendiente",
+      d.comp?"Completo":"En proceso"]);
+  });
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(r),"Resultados");
+
+  const det=[["Grupo","Sección","Rol","Evaluador","P1","P2","P3","P4","Promedio","Pregunta P4"]];
+  ALL.forEach(g=>{
+    const ev=ST.evals[g.id]||{};
+    ["profesor","externo","estudiante"].forEach(rol=>{
+      if(!ev[rol])return;
+      const d=ev[rol];const n=d.notas||{};
+      const vs=Object.values(n).filter(v=>v>0);
+      // Obtener nombre del evaluador (fijo o estudiante)
+      const eFixed=EVLS.find(e=>e.id===d.evId);
+      let evNombre="—";
+      if(eFixed) evNombre=eFixed.nombre;
+      else if(d.evId){
+        const estDatos=encontrarEstudianteEv(d.evId);
+        if(estDatos) evNombre=estDatos.nombre;
+        else evNombre=d.evId;
+      }
+      det.push([`G${g.num}`,g.sec,rol,evNombre,
+        n.P1||"",n.P2||"",n.P3||"",n.P4||"",
+        vs.length===4?(vs.reduce((a,b)=>a+b,0)/4).toFixed(1):"",
+        d.q4c||""]);
+    });
+  });
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(det),"Detalle preguntas");
+  XLSX.writeFile(wb,"Resultados_IME1010_2026.xlsx");
+}
+
+// ══════════════════════════════════════════════════════════════
+// CORREOS AUTORIZADOS
+// ─ Profesores del curso: 2 correos exactos @pucv.cl
+// ─ Evaluadores externos: cualquier otro @pucv.cl (profesor PUCV)
+// ─ Estudiantes: @mail.pucv.cl cuyo correo coincida con alguien
+//   de los listados de ICM1010-01 o ICM1010-02
+// ══════════════════════════════════════════════════════════════
+
+// Solo los dos profesores del curso tienen correo exacto fijo
+const PROFESORES_CURSO = {
+  "maria.berrio@pucv.cl":    { evId:"elizabeth", nombre:"M. Elizabeth Berrio", tipo:"profesor" },
+  "gustavo.morales@pucv.cl": { evId:"gustavo",   nombre:"Gustavo Morales",      tipo:"profesor" },
+};
+
+// ── ICM1010-01: 43 estudiantes con correos oficiales del Excel ──
+const CORREOS_ICM01 = {
+  "matias.acevedo.c@mail.pucv.cl":        { nombre:"Matías Benjamin Acevedo Cuevas",           sec:"ICM1010-01" },
+  "gaspar.araya.p@mail.pucv.cl":          { nombre:"Gaspar Maximiliano Araya Passalacqua",      sec:"ICM1010-01" },
+  "lucas.araya.p@mail.pucv.cl":           { nombre:"Lucas Amaro Araya Peña",                    sec:"ICM1010-01" },
+  "channel.barnier.r@mail.pucv.cl":       { nombre:"Channel Yessenia Barnier Ramírez",          sec:"ICM1010-01" },
+  "antonella.berndt.b@mail.pucv.cl":      { nombre:"Antonella Andrea Beatriz Berndt Barría",    sec:"ICM1010-01" },
+  "alvaro.caipillan.c@mail.pucv.cl":      { nombre:"Álvaro Tomás Caipillán Cartajena",          sec:"ICM1010-01" },
+  "agustin.chavez.l@mail.pucv.cl":        { nombre:"Agustín Ignacio Chávez Lagos",              sec:"ICM1010-01" },
+  "mayte.carcamo.s@mail.pucv.cl":         { nombre:"Mayte Ignacia Cárcamo Serrano",             sec:"ICM1010-01" },
+  "benjamin.cesped.a@mail.pucv.cl":       { nombre:"Benjamín Alejandro Césped Aguilera",        sec:"ICM1010-01" },
+  "maria.davila.b@mail.pucv.cl":          { nombre:"María Ignacia Dávila Bórquez",              sec:"ICM1010-01" },
+  "anais.flores.t@mail.pucv.cl":          { nombre:"Anais Alejandra Flores Tapia",              sec:"ICM1010-01" },
+  "benjamin.fuentes.t01@mail.pucv.cl":    { nombre:"Benjamín Iván Fuentes Toro",                sec:"ICM1010-01" },
+  "fernanda.gibert.p@mail.pucv.cl":       { nombre:"Fernanda Antonia Gibert Poblete",           sec:"ICM1010-01" },
+  "javier.gonzalez.c02@mail.pucv.cl":     { nombre:"Javier Alexis González Chacana",            sec:"ICM1010-01" },
+  "benjamin.gonzalez.v02@mail.pucv.cl":   { nombre:"Benjamín Ignacio González Vargas",          sec:"ICM1010-01" },
+  "matias.gomez.o@mail.pucv.cl":          { nombre:"Matías Ignacio Gómez Olguín",               sec:"ICM1010-01" },
+  "renato.hanglin.h@mail.pucv.cl":        { nombre:"Renato Alexander Hanglin Hernández",        sec:"ICM1010-01" },
+  "andres.henriquez.b@mail.pucv.cl":      { nombre:"Andrés Asaf Henríquez Barboza",             sec:"ICM1010-01" },
+  "bastian.huenchual.a@mail.pucv.cl":     { nombre:"Bastián Alejandro Huenchual Arredondo",     sec:"ICM1010-01" },
+  "juliette.hughes.v@mail.pucv.cl":       { nombre:"Juliette Marcela Hughes Vergara",           sec:"ICM1010-01" },
+  "diego.iturrieta.c@mail.pucv.cl":       { nombre:"Diego Alonso Iturrieta Candia",             sec:"ICM1010-01" },
+  "roberto.jara.r@mail.pucv.cl":          { nombre:"Roberto Andres Jara Rios",                  sec:"ICM1010-01" },
+  "marco.jimenez.r@mail.pucv.cl":         { nombre:"Marco Antonio Jiménez Rivadeneira",         sec:"ICM1010-01" },
+  "fabian.lazcano.h@mail.pucv.cl":        { nombre:"Fabián Ignacio Lazcano Herrera",            sec:"ICM1010-01" },
+  "alessandra.leon.t@mail.pucv.cl":       { nombre:"Alessandra Anahí León Tapia",               sec:"ICM1010-01" },
+  "catalina.maldonado.a@mail.pucv.cl":    { nombre:"Catalina Francesca Maldonado Arancibia",    sec:"ICM1010-01" },
+  "franco.monsalve.a@mail.pucv.cl":       { nombre:"Franco Andrés Monsalve Aracena",            sec:"ICM1010-01" },
+  "javiera.munoz.m04@mail.pucv.cl":       { nombre:"Javiera Catalina Muñoz Miranda",            sec:"ICM1010-01" },
+  "maximiliano.munoz.s02@mail.pucv.cl":   { nombre:"Maximiliano Elías Muñoz Serrano",           sec:"ICM1010-01" },
+  "dario.novoa.a@mail.pucv.cl":           { nombre:"Darío León Novoa Astudillo",                sec:"ICM1010-01" },
+  "fania.prado.r@mail.pucv.cl":           { nombre:"Fania Isaí Prado Rojas",                    sec:"ICM1010-01" },
+  "jose.raurich.v@mail.pucv.cl":          { nombre:"José María Raurich Vargas",                 sec:"ICM1010-01" },
+  "carlos.reinoso.p@mail.pucv.cl":        { nombre:"Carlos Andrés Reinoso Pizarro",             sec:"ICM1010-01" },
+  "joaquin.riquelme.r01@mail.pucv.cl":    { nombre:"Joaquín Sergio Riquelme Rojas",             sec:"ICM1010-01" },
+  "enzo.robles.d@mail.pucv.cl":           { nombre:"Enzo Ariel Robles Delgadillo",              sec:"ICM1010-01" },
+  "bruno.rojas.a@mail.pucv.cl":           { nombre:"Bruno Andrés Rojas Arias",                  sec:"ICM1010-01" },
+  "benjamin.rojas.c01@mail.pucv.cl":      { nombre:"Benjamin Alexander Rojas Cuevas",           sec:"ICM1010-01" },
+  "nicolas.rubino.b@mail.pucv.cl":        { nombre:"Nicolas David Rubiño Bolados",              sec:"ICM1010-01" },
+  "cristobal.rios.a@mail.pucv.cl":        { nombre:"Cristóbal Antonio Ríos Araya",              sec:"ICM1010-01" },
+  "martin.saldias.l@mail.pucv.cl":        { nombre:"Martín Fernando Saldías Latoja",            sec:"ICM1010-01" },
+  "harald.schevik.e@mail.pucv.cl":        { nombre:"Harald Thomas Schevik Embry",               sec:"ICM1010-01" },
+  "sofia.sobarzo.p@mail.pucv.cl":         { nombre:"Sofía Belén Sobarzo Pérez",                 sec:"ICM1010-01" },
+  "vicente.verdejo.f@mail.pucv.cl":       { nombre:"Vicente Tomás Verdejo Fuenzalida",          sec:"ICM1010-01" },
+};
+
+// ── ICM1010-02: 46 estudiantes con correos inferidos del patrón PUCV ──
+const CORREOS_ICM02 = {
+  "gonzalo.azocar@mail.pucv.cl":          { nombre:"Gonzalo Andres Azócar Echeverría",          sec:"ICM1010-02" },
+  "jose.caceres@mail.pucv.cl":            { nombre:"José Miguel Cáceres Tapia",                  sec:"ICM1010-02" },
+  "bastian.contador@mail.pucv.cl":        { nombre:"Bastián Ignacio Contador Vega",              sec:"ICM1010-02" },
+  "diego.nunez@mail.pucv.cl":             { nombre:"Diego Andrés Núñez Figueroa",                sec:"ICM1010-02" },
+  "diego.orellana@mail.pucv.cl":          { nombre:"Diego Antonio Orellana Soza",                sec:"ICM1010-02" },
+  "tomas.rodriguez@mail.pucv.cl":         { nombre:"Tomas Ignacio Rodriguez Muñoz",              sec:"ICM1010-02" },
+  "rodrigo.apablaza@mail.pucv.cl":        { nombre:"Rodrigo Ignacio Apablaza Nanjari",           sec:"ICM1010-02" },
+  "isidora.araya@mail.pucv.cl":           { nombre:"Isidora Graciela Araya Pacheco",             sec:"ICM1010-02" },
+  "valentina.herrera@mail.pucv.cl":       { nombre:"Valentina Paz Herrera Barraza",              sec:"ICM1010-02" },
+  "iam.moreno@mail.pucv.cl":              { nombre:"Iam Nicolás Moreno Astudillo",                sec:"ICM1010-02" },
+  "manuel.petricic@mail.pucv.cl":         { nombre:"Manuel Alonso Petricic Pinto",               sec:"ICM1010-02" },
+  "laura.allendes@mail.pucv.cl":          { nombre:"Laura Andrea Allendes Leiva",                sec:"ICM1010-02" },
+  "valentina.paine@mail.pucv.cl":         { nombre:"Valentina Antonia Paine Mendoza",            sec:"ICM1010-02" },
+  "antonia.rivera@mail.pucv.cl":          { nombre:"Antonia Millaray Del Carmen Rivera Pastén",  sec:"ICM1010-02" },
+  "rafael.soto@mail.pucv.cl":             { nombre:"Rafael Ignacio Soto Soto",                   sec:"ICM1010-02" },
+  "alonso.titus@mail.pucv.cl":            { nombre:"Alonso Said Titus Santibáñez",               sec:"ICM1010-02" },
+  "juan.gonzalez@mail.pucv.cl":           { nombre:"Juan David González Arbea",                  sec:"ICM1010-02" },
+  "bruno.mladineo@mail.pucv.cl":          { nombre:"Bruno Mladineo Juárez",                      sec:"ICM1010-02" },
+  "christian.schnettler@mail.pucv.cl":    { nombre:"Christian Augusto Schnettler Bohle",         sec:"ICM1010-02" },
+  "inti.schultzki@mail.pucv.cl":          { nombre:"Inti Ignacio Schultzki Fica",                sec:"ICM1010-02" },
+  "felipe.silva@mail.pucv.cl":            { nombre:"Felipe Eugenio Silva Mora",                  sec:"ICM1010-02" },
+  "rodrigo.albornoz@mail.pucv.cl":        { nombre:"Rodrigo Alonso Albornoz Parra",              sec:"ICM1010-02" },
+  "gustavo.hidalgo@mail.pucv.cl":         { nombre:"Gustavo Alonso Hidalgo Alicera",             sec:"ICM1010-02" },
+  "sebastian.panire@mail.pucv.cl":        { nombre:"Sebastián Okotie Panire Weishaupt",          sec:"ICM1010-02" },
+  "lukas.tapia@mail.pucv.cl":             { nombre:"Lukas Ikki Tapia Baeza",                     sec:"ICM1010-02" },
+  "sofia.zavala@mail.pucv.cl":            { nombre:"Sofía Ignacia Zavala Torres",                sec:"ICM1010-02" },
+  "pablo.fernandez@mail.pucv.cl":         { nombre:"Pablo Antonio Fernández Ramirez",            sec:"ICM1010-02" },
+  "joshua.meza@mail.pucv.cl":             { nombre:"Joshua Benjamín Meza Pizarro",               sec:"ICM1010-02" },
+  "benjamin.miranda@mail.pucv.cl":        { nombre:"Benjamín Ernesto Miranda Rojas",             sec:"ICM1010-02" },
+  "maximiliano.salazar@mail.pucv.cl":     { nombre:"Maximiliano Rafael Salazar Barazarte",       sec:"ICM1010-02" },
+  "johana.vaca@mail.pucv.cl":             { nombre:"Johana Cristal Vaca Melgar",                 sec:"ICM1010-02" },
+  "maximiliano.ahumada@mail.pucv.cl":     { nombre:"Maximiliano Andrés Ahumada Gálvez",         sec:"ICM1010-02" },
+  "raphael.carrasco@mail.pucv.cl":        { nombre:"Raphael Maximiliano Carrasco Ahumada",       sec:"ICM1010-02" },
+  "agustin.mesa@mail.pucv.cl":            { nombre:"Agustín Andrés Mesa Arancibia",              sec:"ICM1010-02" },
+  "cristobal.rivera@mail.pucv.cl":        { nombre:"Cristóbal Benjamín Rivera Jara",             sec:"ICM1010-02" },
+  "martina.contreras@mail.pucv.cl":       { nombre:"Martina Ariannys Contreras Contreras",       sec:"ICM1010-02" },
+  "matias.fuentes@mail.pucv.cl":          { nombre:"Matías Ignacio Fuentes Banz",                sec:"ICM1010-02" },
+  "joaquin.gaete@mail.pucv.cl":           { nombre:"Joaquín David Gaete Arancibia",              sec:"ICM1010-02" },
+  "antonia.gonzalez@mail.pucv.cl":        { nombre:"Antonia Belén González Espinoza",            sec:"ICM1010-02" },
+  "vicente.sazo@mail.pucv.cl":            { nombre:"Vicente Pablo Sazo Quiroz",                  sec:"ICM1010-02" },
+  "elunei.solis@mail.pucv.cl":            { nombre:"Elunei Fernanda Solís Muñoz",                sec:"ICM1010-02" },
+  "diego.cortes@mail.pucv.cl":            { nombre:"Diego Emilio Cortés Olivares",               sec:"ICM1010-02" },
+  "rodrigo.jara@mail.pucv.cl":            { nombre:"Rodrigo Eduardo Jara Sanchez",               sec:"ICM1010-02" },
+  "martin.vasquez@mail.pucv.cl":          { nombre:"Martín Alonso Vásquez Rivas",                sec:"ICM1010-02" },
+  "camilo.yanez@mail.pucv.cl":            { nombre:"Camilo Antonio Yáñez Cortés",                sec:"ICM1010-02" },
+  "bastian.zapata@mail.pucv.cl":          { nombre:"Bastián Alejandro Zapata Toledo",            sec:"ICM1010-02" },
+};
+
+// Mapa unificado estudiantes
+const TODOS_CORREOS_EST = { ...CORREOS_ICM01, ...CORREOS_ICM02 };
+
+// ══════════════════════════════════════════════════════════════
+// LOGIN — lógica de validación
+// ══════════════════════════════════════════════════════════════
+function doLogin(){
+  const email = document.getElementById("l-email").value.trim().toLowerCase();
+  const errEl = document.getElementById("login-err");
+  errEl.style.display="none"; errEl.textContent="";
+  document.getElementById("l-email").classList.remove("err");
+
+  if(!email||!email.includes("@")){
+    showErr("Por favor ingresa tu correo institucional PUCV."); return;
+  }
+
+  // ── 1. Profesores del curso (dos correos exactos) ──────────
+  if(PROFESORES_CURSO[email]){
+    const d=PROFESORES_CURSO[email];
+    const esAdmin=(email==="maria.berrio@pucv.cl");
+    abrirSesion({ evId:d.evId, nombre:d.nombre, email, tipo:"profesor", esAdmin });
+    return;
+  }
+
+  // ── 2. Cualquier otro @pucv.cl → evaluador externo (profesor PUCV) ──
+  if(email.endsWith("@pucv.cl")){
+    // Extraer nombre del prefijo del correo (nombre.apellido → "Nombre Apellido")
+    const prefijo=email.split("@")[0];
+    const nombreCorrecto=prefijo.split(".").map(p=>p.charAt(0).toUpperCase()+p.slice(1)).join(" ");
+    // Asignar al pool de externos de forma balanceada según cuántos ya hay
+    const cntExt={extA:0,extB:0,extC:0};
+    Object.values(ST.evals||{}).forEach(evGrupo=>{
+      if(evGrupo.externo && evGrupo.externo.evId && cntExt[evGrupo.externo.evId]!==undefined)
+        cntExt[evGrupo.externo.evId]++;
+    });
+    // Si ya tiene sesión previa, reutilizar su evId
+    let evId="extA";
+    if(ST.sesion&&ST.sesion.email===email) evId=ST.sesion.evId;
+    abrirSesion({ evId, nombre:nombreCorrecto, email, tipo:"externo", esAdmin:false });
+    return;
+  }
+
+  // ── 3. @mail.pucv.cl → estudiante de ICM1010 ──────────────
+  if(email.endsWith("@mail.pucv.cl")){
+    // Buscar correo exacto en el mapa
+    if(TODOS_CORREOS_EST[email]){
+      const d=TODOS_CORREOS_EST[email];
+      // Buscar evId en asignaciones si las hay
+      let evId="obs_"+email.replace(/[@.]/g,"_");
+      if(ST.asign&&Object.keys(ST.asign).length){
+        for(const a of Object.values(ST.asign)){
+          if(a.estudiante&&a.estudiante.evId&&norm(a.estudiante.nombre)===norm(d.nombre)){
+            evId=a.estudiante.evId; break;
+          }
+        }
+        if(!ST.asign||!Object.keys(ST.asign).length){
+          showErr("Las asignaciones aún no han sido generadas. Contacta a la profesora M. Elizabeth Berrio.");
+          return;
+        }
+      }
+      abrirSesion({ evId, nombre:d.nombre, email, tipo:"estudiante", esAdmin:false, secOrigen:d.sec });
+      return;
+    }
+
+    // Correo @mail.pucv.cl no registrado — intentar reconocer por apellido en el prefijo
+    // Extraer partes del correo: nombre.apellido[@mail.pucv.cl]
+    const prefijo=email.split("@")[0];
+    const partes=prefijo.split(".");
+    // Buscar si algún apellido del prefijo coincide con algún alumno
+    const posibleNombre=partes.map(p=>norm(p));
+    let encontrado=null;
+    for(const [corr,dat] of Object.entries(TODOS_CORREOS_EST)){
+      const apellidosAlumno=norm(dat.nombre).split(" ");
+      const coincide=posibleNombre.some(p=>p.length>3&&apellidosAlumno.some(a=>a.startsWith(p)||p.startsWith(a)));
+      if(coincide){ encontrado=dat; break; }
+    }
+    if(encontrado){
+      let evId="obs_"+email.replace(/[@.]/g,"_");
+      if(ST.asign&&Object.keys(ST.asign).length){
+        for(const a of Object.values(ST.asign)){
+          if(a.estudiante&&a.estudiante.evId&&norm(a.estudiante.nombre)===norm(encontrado.nombre)){
+            evId=a.estudiante.evId; break;
+          }
+        }
+      }
+      abrirSesion({ evId, nombre:encontrado.nombre, email, tipo:"estudiante", esAdmin:false, secOrigen:encontrado.sec });
+      return;
+    }
+
+    showErr("Este correo @mail.pucv.cl no corresponde a ningún estudiante registrado en ICM1010. Verifica que estés ingresando tu correo PUCV correcto.");
+    document.getElementById("l-email").classList.add("err");
+    return;
+  }
+
+  // ── 4. Dominio no PUCV ─────────────────────────────────────
+  showErr("Solo se aceptan correos institucionales PUCV.\n• Profesores: @pucv.cl\n• Estudiantes: @mail.pucv.cl");
+  document.getElementById("l-email").classList.add("err");
+}
+
+function norm(s){
+  return s.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/\s+/g," ").trim();
+}
+
+function showErr(msg){
+  const el=document.getElementById("login-err");
+  el.textContent=msg;
+  el.style.display="block";
+}
+
+function abrirSesion(sesion){
+  ST.sesion=sesion;
+  sv();
+  // Ocultar login
+  document.getElementById("login-screen").style.display="none";
+  // Mostrar chip de usuario en header
+  renderUserChip();
+  // Mostrar/ocultar nav Asignaciones según si es admin
+  document.getElementById("nav-asign").style.display = sesion.esAdmin ? "" : "none";
+  // Ir a inicio
+  go("inicio");
+}
+
+function renderUserChip(){
+  const s=ST.sesion;
+  if(!s){ document.getElementById("user-chip-wrap").innerHTML=""; return; }
+  const icono = s.tipo==="profesor"?"👩‍🏫":s.tipo==="estudiante"?"🎒":"🎓";
+  document.getElementById("user-chip-wrap").innerHTML=`
+    <div class="user-chip">
+      ${icono} <strong>${s.nombre.split(" ")[0]}</strong>
+      <span style="opacity:.7;font-size:.65rem">${s.email}</span>
+      <button class="logout" onclick="cerrarSesion()">Salir</button>
+    </div>`;
+}
+
+function cerrarSesion(){
+  if(!confirm("¿Cerrar sesión?")) return;
+  ST.sesion=null;
+  sv();
+  document.getElementById("login-screen").style.display="flex";
+  document.getElementById("user-chip-wrap").innerHTML="";
+  document.getElementById("nav-asign").style.display="none";
+  document.getElementById("l-email").value="";
+  document.getElementById("login-err").style.display="none";
+  document.getElementById("login-err").textContent="";
+}
+
+// ══════════════════════════════════════════════════════════════
+// MODAL
+// ══════════════════════════════════════════════════════════════
+function cModal(id){document.getElementById(id).classList.remove("on");}
+document.querySelectorAll(".mbg").forEach(m=>m.addEventListener("click",e=>{if(e.target===m)m.classList.remove("on");}));
+
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+window.addEventListener("DOMContentLoaded",()=>{
+  rInicio();
+  if(Object.keys(ST.asign||{}).length) rAsign();
+
+  // Restaurar sesión si ya hay una guardada (recarga de página)
+  if(ST.sesion){
+    document.getElementById("login-screen").style.display="none";
+    renderUserChip();
+    document.getElementById("nav-asign").style.display = ST.sesion.esAdmin ? "" : "none";
+    rStep1();
+  } else {
+    // Mostrar login
+    document.getElementById("login-screen").style.display="flex";
+  }
+});
+</script>
+</body>
+</html>
